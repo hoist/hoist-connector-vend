@@ -632,6 +632,79 @@ describe('VendConnector', function () {
       });
     });
   });
-  describe.skip('#receiveBounce', function () {});
+  describe('#receiveBounce', function () {
+    describe('with bounce.query', function () {
+      var bounce = {
+        query: {
+          code: 'code',
+          domain_prefix: 'domain_prefix'
+        },
+        proxy: {},
+        get: function (name) {
+          return this.proxy[name];
+        },
+        set: function (name, value) {
+          this.proxy[name] = value;
+          return BBPromise.resolve(this);
+        },
+        done: sinon.stub()
+      };
+      var response = {
+        body: 'body'
+      }
+      before(function () {
+        sinon.stub(connector, 'requestAccessToken').returns(BBPromise.resolve(response));
+        return connector.receiveBounce(bounce);
+      });
+      after(function () {
+        connector.requestAccessToken.restore();
+      });
+      it('calls requestAccessToken with correct arguments', function () {
+        expect(connector.requestAccessToken).to.have.been.calledWith(bounce);
+      });
+      it('sets correct properties on bounce', function () {
+        expect(bounce.get('code')).to.eql('code');
+        expect(bounce.get('domainPrefix')).to.eql('domain_prefix');
+        expect(bounce.get('token')).to.eql(response.body);
+      });
+      it('calls bounce.done', function () {
+        expect(bounce.done).to.have.been.called;
+      });
+    });
+    describe('without bounce.query', function () {
+      var bounce = {
+        proxy: {},
+        get: function (name) {
+          return this.proxy[name];
+        },
+        set: function (name, value) {
+          this.proxy[name] = value;
+          return BBPromise.resolve(this);
+        },
+        redirect: sinon.stub(),
+        done: sinon.stub()
+      };
+      var response = {
+        body: 'body'
+      }
+      before(function () {
+        sinon.stub(connector, 'requestAccessToken').returns(BBPromise.resolve(response));
+        return connector.receiveBounce(bounce);
+      });
+      after(function () {
+        connector.requestAccessToken.restore();
+      });
+      it('does not call requestAccessToken with correct arguments', function () {
+        expect(connector.requestAccessToken).to.have.not.been.called;
+      });
+      it('does not call bounce.done', function () {
+        expect(bounce.done).to.have.not.been.called;
+      });
+      it('calls redirect with correct url', function(){
+        expect(bounce.redirect)
+        .to.have.been.calledWith('https://secure.vendhq.com/connect?response_type=code&client_id=clientId&redirect_uri=redirectUri');
+      });
+    });
+  });
   describe.skip('#requestAccessToken', function () {});
 });
