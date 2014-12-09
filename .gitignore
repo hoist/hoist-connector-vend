@@ -6,6 +6,7 @@ lib-cov
 *.out
 *.pid
 *.gz
+*.err
 
 pids
 logs
@@ -34,7 +35,14 @@ Icon
 .Trashes
 
 coverage-out/*
+public/js/main.js
+public/css/style.css
 
-**/*.orig
+*.orig
+
+coverage/*
+log/*
 config/runtime.json
-logs/*
+.queues
+
+config/test.json
