@@ -12,26 +12,28 @@ var errors = require('hoist-errors');
 
 describe('VendConnector', function () {
   var connector;
-  var authProxy = {
-    token: {
-      access_token: '<access-token>',
-      refresh_token: '<refresh-token>',
-      expires: Date.now + 10 * 60 * 1000,
-      expires_in: '7200'
-    },
-    domainPrefix: 'test'
-  };
   before(function () {
     connector = new Vend({
-      settings: {
-        clientId: 'clientId',
-        clientSecret: 'clientSecret',
-        redirectUri: 'redirectUri'
-      }
+      clientId: 'clientId',
+      clientSecret: 'clientSecret',
+      redirectUri: 'redirectUri'
     });
     connector.authSettings = {
+      authProxy: {
+        token: {
+          access_token: '<access_token>',
+          refresh_token: '<refresh_token>',
+          expires: Date.now() + 10 * 60 * 1000,
+          expires_in: '7200'
+        },
+        domainPrefix: 'test'
+      },
       get: function (name) {
-        return authProxy[name];
+        return this.authProxy[name];
+      },
+      set: function (name, value) {
+        this.authProxy[name] = value;
+        return BBPromise.resolve(this);
       }
     };
   });
@@ -134,7 +136,7 @@ describe('VendConnector', function () {
           method: 'GET',
           uri: 'https://test.vendhq.com/api/product',
           headers: {
-            Authorization: 'Bearer <access-token>'
+            Authorization: 'Bearer <access_token>'
           },
           resolveWithFullResponse: true
         };
@@ -168,7 +170,7 @@ describe('VendConnector', function () {
           method: 'GET',
           uri: 'https://test.vendhq.com/api/product?query=query',
           headers: {
-            Authorization: 'Bearer <access-token>'
+            Authorization: 'Bearer <access_token>'
           },
           resolveWithFullResponse: true
         };
@@ -199,7 +201,7 @@ describe('VendConnector', function () {
           method: 'GET',
           uri: 'https://test.vendhq.com/api/product?query=query',
           headers: {
-            Authorization: 'Bearer <access-token>'
+            Authorization: 'Bearer <access_token>'
           },
           resolveWithFullResponse: true
         };
@@ -233,7 +235,7 @@ describe('VendConnector', function () {
           method: 'GET',
           uri: 'https://test.vendhq.com/api/product?querypath=querypath&query=query',
           headers: {
-            Authorization: 'Bearer <access-token>'
+            Authorization: 'Bearer <access_token>'
           },
           resolveWithFullResponse: true
         };
@@ -267,7 +269,7 @@ describe('VendConnector', function () {
           method: 'GET',
           uri: 'https://test.vendhq.com/api/product?query=query',
           headers: {
-            Authorization: 'Bearer <access-token>'
+            Authorization: 'Bearer <access_token>'
           },
           resolveWithFullResponse: true
         };
@@ -300,7 +302,7 @@ describe('VendConnector', function () {
         var options = {
           method: 'POST',
           headers: {
-            Authorization: 'Bearer <access-token>'
+            Authorization: 'Bearer <access_token>'
           },
           resolveWithFullResponse: true,
           uri: 'https://test.vendhq.com/api/stock_transfers',
@@ -342,7 +344,7 @@ describe('VendConnector', function () {
         var options = {
           method: 'POST',
           headers: {
-            Authorization: 'Bearer <access-token>'
+            Authorization: 'Bearer <access_token>'
           },
           resolveWithFullResponse: true,
           uri: 'https://test.vendhq.com/api/stock_transfers',
@@ -381,7 +383,7 @@ describe('VendConnector', function () {
         var options = {
           method: 'PUT',
           headers: {
-            Authorization: 'Bearer <access-token>'
+            Authorization: 'Bearer <access_token>'
           },
           resolveWithFullResponse: true,
           uri: 'https://test.vendhq.com/api/consignment/12345',
@@ -423,7 +425,7 @@ describe('VendConnector', function () {
         var options = {
           method: 'PUT',
           headers: {
-            Authorization: 'Bearer <access-token>'
+            Authorization: 'Bearer <access_token>'
           },
           resolveWithFullResponse: true,
           uri: 'https://test.vendhq.com/api/consignment/12345',
@@ -461,7 +463,175 @@ describe('VendConnector', function () {
       });
     });
   });
-  describe.skip('#refreshToken', function () {});
+  describe('#refreshToken', function () {
+    describe('with an expired token and no refreshToken in response.body', function () {
+      var response = {
+        statusCode: 200,
+        body: {
+          access_token: 'accessToken'
+        }
+      };
+      var body = {
+        refresh_token: '<refresh_token>',
+        client_id: 'clientId',
+        client_secret: 'clientSecret',
+        grant_type: 'refresh_token'
+      };
+      var options = {
+        method: 'POST',
+        resolveWithFullResponse: true,
+        uri: 'https://test.vendhq.com/api/1.0/token',
+        body: body,
+        json: true
+      };
+      before(function () {
+        connector.authSettings.authProxy.token.expires = Date.now() - 1000;
+        sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+        return connector.refreshToken();
+      });
+      after(function () {
+        connector.requestPromiseHelper.restore();
+        connector.authSettings.authProxy = {
+          token: {
+            access_token: '<access_token>',
+            refresh_token: '<refresh_token>',
+            expires: Date.now() + 10 * 60 * 1000,
+            expires_in: '7200'
+          },
+          domainPrefix: 'test'
+        };
+      });
+      it('calls requestPromiseHelper with correct arguments', function () {
+        expect(connector.requestPromiseHelper).to.have.been.calledWith(options);
+      })
+      it('sets authSettings.token', function () {
+        expect(connector.authSettings.authProxy.token).to.eql({
+          access_token: 'accessToken',
+          refresh_token: '<refresh_token>'
+        });
+      })
+    });
+    describe('with an expired token and a refreshToken in response.body', function () {
+      var response = {
+        statusCode: 200,
+        body: {
+          access_token: 'accessToken',
+          refresh_token: 'refreshToken'
+        }
+      };
+      var body = {
+        refresh_token: '<refresh_token>',
+        client_id: 'clientId',
+        client_secret: 'clientSecret',
+        grant_type: 'refresh_token'
+      };
+      var options = {
+        method: 'POST',
+        resolveWithFullResponse: true,
+        uri: 'https://test.vendhq.com/api/1.0/token',
+        body: body,
+        json: true
+      };
+      before(function () {
+        connector.authSettings.authProxy.token.expires = Date.now() - 1000;
+        sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+        return connector.refreshToken();
+      });
+      after(function () {
+        connector.requestPromiseHelper.restore();
+        connector.authSettings.authProxy = {
+          token: {
+            access_token: '<access_token>',
+            refresh_token: '<refresh_token>',
+            expires: Date.now() + 10 * 60 * 1000,
+            expires_in: '7200'
+          },
+          domainPrefix: 'test'
+        };
+      });
+      it('calls requestPromiseHelper with correct arguments', function () {
+        expect(connector.requestPromiseHelper).to.have.been.calledWith(options);
+      })
+      it('sets authSettings.token', function () {
+        expect(connector.authSettings.authProxy.token).to.eql({
+          access_token: 'accessToken',
+          refresh_token: 'refreshToken'
+        });
+      });
+    });
+    describe('with an expired token with response statusCode not 200', function () {
+      var response = {
+        statusCode: 400,
+      };
+      var body = {
+        refresh_token: '<refresh_token>',
+        client_id: 'clientId',
+        client_secret: 'clientSecret',
+        grant_type: 'refresh_token'
+      };
+      var options = {
+        method: 'POST',
+        resolveWithFullResponse: true,
+        uri: 'https://test.vendhq.com/api/1.0/token',
+        body: body,
+        json: true
+      };
+      var error;
+      before(function (done) {
+        connector.authSettings.authProxy.token.expires = Date.now() - 1000;
+        sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+        return connector.refreshToken().catch(function (err) {
+          error = err;
+          done();
+        });
+      });
+      after(function () {
+        connector.requestPromiseHelper.restore();
+        connector.authSettings.authProxy = {
+          token: {
+            access_token: '<access_token>',
+            refresh_token: '<refresh_token>',
+            expires: Date.now() + 10 * 60 * 1000,
+            expires_in: '7200'
+          },
+          domainPrefix: 'test'
+        };
+      });
+      it('calls requestPromiseHelper with correct arguments', function () {
+        expect(connector.requestPromiseHelper).to.have.been.calledWith(options);
+      })
+      it('rejects', function () {
+        expect(error)
+          .to.be.instanceOf(errors.connector.ConnectorError);
+      });
+    });
+    describe('with an unexpired token', function () {
+      var result;
+      before(function () {
+        sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve());
+        return (result = connector.refreshToken());
+      });
+      after(function () {
+        connector.requestPromiseHelper.restore();
+      });
+      it('does not call requestPromiseHelper', function () {
+        expect(connector.requestPromiseHelper.called).to.eql(false);
+      })
+      it('expects result to become a promise', function () {
+        expect(result.then).to.be.a('function');
+      })
+    });
+    describe('with no authSettings', function () {
+      before(function () {
+        connector.authSettings = undefined;
+      });
+      it('rejects', function () {
+        expect(function () {
+          connector.refreshToken();
+        }).to.throw(errors.connector.request.UnauthorizedError);
+      });
+    });
+  });
   describe.skip('#receiveBounce', function () {});
   describe.skip('#requestAccessToken', function () {});
 });
