@@ -5,6 +5,13 @@ machine:
     version: v0.10.28
 general:
   artifacts:
-    - coverage-out/*.html
+    - coverage/*
+    - coverage/**/*
     - log/*.log
     - npm-debug.log
+deployment:
+  production:
+    branch: master
+    commands:
+      - git submodule add git@github.com:hoist/deploy.git
+      - cd deploy && bundle install && bundle exec cap connector_servers deploy
