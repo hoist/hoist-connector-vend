@@ -694,17 +694,48 @@ describe('VendConnector', function () {
       after(function () {
         connector.requestAccessToken.restore();
       });
-      it('does not call requestAccessToken with correct arguments', function () {
+      it('does not call requestAccessToken', function () {
         expect(connector.requestAccessToken).to.have.not.been.called;
       });
       it('does not call bounce.done', function () {
         expect(bounce.done).to.have.not.been.called;
       });
-      it('calls redirect with correct url', function(){
+      it('calls redirect with correct url', function () {
         expect(bounce.redirect)
-        .to.have.been.calledWith('https://secure.vendhq.com/connect?response_type=code&client_id=clientId&redirect_uri=redirectUri');
+          .to.have.been.calledWith('https://secure.vendhq.com/connect?response_type=code&client_id=clientId&redirect_uri=redirectUri');
       });
     });
   });
-  describe.skip('#requestAccessToken', function () {});
+  describe('#requestAccessToken', function () {
+    var bounce = {
+      proxy: {
+        code: 'code',
+        domainPrefix: 'test'
+      },
+      get: function (name) {
+        return this.proxy[name];
+      }
+    };
+    var body = {
+      code: 'code',
+      client_id: 'clientId',
+      client_secret: 'clientSecret',
+      grant_type: 'authorization_code',
+      redirect_uri: 'redirectUri'
+    };
+    var options = {
+      method: 'POST',
+      resolveWithFullResponse: true,
+      uri: 'https://test.vendhq.com/api/1.0/token',
+      body: body,
+      json: true
+    };
+    before(function () {
+      sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve());
+      return connector.requestAccessToken(bounce)
+    });
+    it('calls requestPromiseHelper with correct arguments', function () {
+      expect(connector.requestPromiseHelper).to.have.been.calledWith(options);
+    })
+  });
 });
