@@ -35,8 +35,8 @@
     "bluebird": "^2.3.11",
     "config": "^1.8.1",
     "hoist-logger": "git://github.com/hoist/hoist-logger",
+    "hoist-errors": "git://github.com/hoist/hoist-errors",
     "lodash": "^2.4.1",
-    "oauth": "git://github.com/hoist/node-oauth",
     "request": "^2.48.0",
     "request-promise": "^0.3.2"
   }
