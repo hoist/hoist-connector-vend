@@ -137,10 +137,9 @@ describe('VendConnector', function () {
             Authorization: 'Bearer <access-token>'
           },
           resolveWithFullResponse: true
-        }
+        };
         var result;
         before(function () {
-
           sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
           sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
           result = connector.request('GET', '/product');
@@ -158,7 +157,301 @@ describe('VendConnector', function () {
             .to.have.been.called;
         });
       });
-
+      describe('with queryParams object', function () {
+        var response = {
+          body: 'body'
+        };
+        var queryParams = {
+          query: 'query'
+        };
+        var options = {
+          method: 'GET',
+          uri: 'https://test.vendhq.com/api/product?query=query',
+          headers: {
+            Authorization: 'Bearer <access-token>'
+          },
+          resolveWithFullResponse: true
+        };
+        var result;
+        before(function () {
+          sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+          sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+          result = connector.request('GET', '/product', queryParams);
+        });
+        after(function () {
+          connector.requestPromiseHelper.restore();
+          connector.refreshToken.restore();
+        });
+        it('calls requestPromiseHelper', function () {
+          expect(connector.requestPromiseHelper)
+            .to.have.been.calledWith(options);
+        });
+        it('calls refreshToken', function () {
+          expect(connector.refreshToken)
+            .to.have.been.called;
+        });
+      });
+      describe('with queryParams in path', function () {
+        var response = {
+          body: 'body'
+        };
+        var options = {
+          method: 'GET',
+          uri: 'https://test.vendhq.com/api/product?query=query',
+          headers: {
+            Authorization: 'Bearer <access-token>'
+          },
+          resolveWithFullResponse: true
+        };
+        var result;
+        before(function () {
+          sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+          sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+          result = connector.request('GET', '/product?query=query');
+        });
+        after(function () {
+          connector.requestPromiseHelper.restore();
+          connector.refreshToken.restore();
+        });
+        it('calls requestPromiseHelper', function () {
+          expect(connector.requestPromiseHelper)
+            .to.have.been.calledWith(options);
+        });
+        it('calls refreshToken', function () {
+          expect(connector.refreshToken)
+            .to.have.been.called;
+        });
+      });
+      describe('with queryParams in path and object', function () {
+        var response = {
+          body: 'body'
+        };
+        var queryParams = {
+          query: 'query'
+        };
+        var options = {
+          method: 'GET',
+          uri: 'https://test.vendhq.com/api/product?querypath=querypath&query=query',
+          headers: {
+            Authorization: 'Bearer <access-token>'
+          },
+          resolveWithFullResponse: true
+        };
+        var result;
+        before(function () {
+          sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+          sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+          result = connector.request('GET', '/product?querypath=querypath', queryParams);
+        });
+        after(function () {
+          connector.requestPromiseHelper.restore();
+          connector.refreshToken.restore();
+        });
+        it('calls requestPromiseHelper', function () {
+          expect(connector.requestPromiseHelper)
+            .to.have.been.calledWith(options);
+        });
+        it('calls refreshToken', function () {
+          expect(connector.refreshToken)
+            .to.have.been.called;
+        });
+      });
+      describe('with duplicate queryParams in path and object', function () {
+        var response = {
+          body: 'body'
+        };
+        var queryParams = {
+          query: 'query'
+        };
+        var options = {
+          method: 'GET',
+          uri: 'https://test.vendhq.com/api/product?query=query',
+          headers: {
+            Authorization: 'Bearer <access-token>'
+          },
+          resolveWithFullResponse: true
+        };
+        var result;
+        before(function () {
+          sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+          sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+          result = connector.request('GET', '/product?query=queryfalse', queryParams);
+        });
+        after(function () {
+          connector.requestPromiseHelper.restore();
+          connector.refreshToken.restore();
+        });
+        it('calls requestPromiseHelper correctly', function () {
+          expect(connector.requestPromiseHelper)
+            .to.have.been.calledWith(options);
+        });
+        it('calls refreshToken', function () {
+          expect(connector.refreshToken)
+            .to.have.been.called;
+        });
+      });
+    });
+    describe('POST', function () {
+      describe('with json string', function () {
+        var response = {
+          body: 'body'
+        };
+        var data = '{"Staff":{"Name":"John"}}';
+        var options = {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer <access-token>'
+          },
+          resolveWithFullResponse: true,
+          uri: 'https://test.vendhq.com/api/stock_transfers',
+          body: data,
+          json: true
+        };
+        var result;
+        before(function () {
+          sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+          sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+          result = connector.request('POST', '/stock_transfers', null, data);
+          return result;
+        });
+        after(function () {
+          connector.requestPromiseHelper.restore();
+          connector.refreshToken.restore();
+        });
+        it('calls requestPromiseHelper', function () {
+          expect(connector.requestPromiseHelper)
+            .to.have.been.calledWith(options);
+        });
+        it('calls refreshToken', function () {
+          expect(connector.refreshToken)
+            .to.have.been.called;
+        });
+        it('returns response', function () {
+          return expect(result).to.become(response);
+        });
+      });
+      describe('with object', function () {
+        var response = {
+          body: 'body'
+        };
+        var data = {
+          Staff: {
+            Name: "John"
+          }
+        };
+        var options = {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer <access-token>'
+          },
+          resolveWithFullResponse: true,
+          uri: 'https://test.vendhq.com/api/stock_transfers',
+          body: data,
+          json: true
+        };
+        var result;
+        before(function () {
+          sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+          sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+          result = connector.request('POST', '/stock_transfers', null, data);
+        });
+        after(function () {
+          connector.requestPromiseHelper.restore();
+          connector.refreshToken.restore();
+        });
+        it('calls requestPromiseHelper', function () {
+          expect(connector.requestPromiseHelper)
+            .to.have.been.calledWith(options);
+        });
+        it('calls refreshToken', function () {
+          expect(connector.refreshToken)
+            .to.have.been.called;
+        });
+        it('returns response', function () {
+          return expect(result).to.become(response);
+        });
+      });
+    });
+    describe('PUT', function () {
+      describe('with json string', function () {
+        var response = {
+          body: 'body'
+        };
+        var data = '{"Staff":{"Name":"John"}}';
+        var options = {
+          method: 'PUT',
+          headers: {
+            Authorization: 'Bearer <access-token>'
+          },
+          resolveWithFullResponse: true,
+          uri: 'https://test.vendhq.com/api/consignment/12345',
+          body: data,
+          json: true
+        };
+        var result;
+        before(function () {
+          sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+          sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+          result = connector.request('PUT', '/consignment/12345', null, data);
+          return result;
+        });
+        after(function () {
+          connector.requestPromiseHelper.restore();
+          connector.refreshToken.restore();
+        });
+        it('calls requestPromiseHelper', function () {
+          expect(connector.requestPromiseHelper)
+            .to.have.been.calledWith(options);
+        });
+        it('calls refreshToken', function () {
+          expect(connector.refreshToken)
+            .to.have.been.called;
+        });
+        it('returns response', function () {
+          return expect(result).to.become(response);
+        });
+      });
+      describe('with object', function () {
+        var response = {
+          body: 'body'
+        };
+        var data = {
+          Staff: {
+            Name: "John"
+          }
+        };
+        var options = {
+          method: 'PUT',
+          headers: {
+            Authorization: 'Bearer <access-token>'
+          },
+          resolveWithFullResponse: true,
+          uri: 'https://test.vendhq.com/api/consignment/12345',
+          body: data,
+          json: true
+        };
+        var result;
+        before(function () {
+          sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+          sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+          result = connector.request('PUT', '/consignment/12345', null, data);
+        });
+        after(function () {
+          connector.requestPromiseHelper.restore();
+          connector.refreshToken.restore();
+        });
+        it('calls requestPromiseHelper', function () {
+          expect(connector.requestPromiseHelper)
+            .to.have.been.calledWith(options);
+        });
+        it('calls refreshToken', function () {
+          expect(connector.refreshToken)
+            .to.have.been.called;
+        });
+        it('returns response', function () {
+          return expect(result).to.become(response);
+        });
+      });
     });
     describe('with no path', function () {
       it('rejects', function () {
