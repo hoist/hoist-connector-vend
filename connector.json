@@ -30,5 +30,6 @@
     "/products" : {
       "sample" : "./samples/getting-started.js",
       "docs" : "https://developers.vendhq.com/documentation/api/0.x/products.html"
-    },
+    }
+  }
 }
