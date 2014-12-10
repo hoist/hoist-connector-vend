@@ -1,3 +1,4 @@
+
 {
   "name": "Vend",
   "slug" : "vend",
@@ -5,7 +6,7 @@
   "auth_types" : {
     "Private": {
       "setup_help": ""
-    },
+    }
   },
   "settings": [{
     "key": "clientId",
