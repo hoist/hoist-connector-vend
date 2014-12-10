@@ -1,7 +1,7 @@
 {
-  "name": "Xero",
-  "slug" : "xero",
-  "url": "http://www.xero.com",
+  "name": "Vend",
+  "slug" : "vend",
+  "url": "http://www.vendhq.com",
   "auth_types" : {
     "Private": {
       "setup_help": ""
