@@ -1,0 +1,34 @@
+{
+  "name": "Xero",
+  "slug" : "xero",
+  "url": "http://www.xero.com",
+  "auth_types" : {
+    "Private": {
+      "setup_help": ""
+    },
+  },
+  "settings": [{
+    "key": "clientId",
+    "type" : "text",
+    "description": "Client Id",
+    "for_types": ["Private"]
+  },{
+    "key": "clientSecret",
+    "type" : "text",
+    "description": "Client Secret",
+    "for_types": ["Private"]
+  },{
+    "key": "redirectUri",
+    "type" : "longtext",
+    "description": "Redirect URI",
+    "for_types": ["Private"]
+  }],
+  "samples" : {
+    "gettingStarted" : "./samples/getting-started.js"
+  },
+  "endpoints" : {
+    "/products" : {
+      "sample" : "./samples/getting-started.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/products.html"
+    },
+}
