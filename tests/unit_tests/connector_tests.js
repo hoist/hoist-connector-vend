@@ -481,8 +481,7 @@ describe('VendConnector', function () {
         method: 'POST',
         resolveWithFullResponse: true,
         uri: 'https://test.vendhq.com/api/1.0/token',
-        body: body,
-        json: true
+        formData: body
       };
       before(function () {
         connector.authSettings.authProxy.token.expires = Date.now() - 1000;
@@ -529,8 +528,7 @@ describe('VendConnector', function () {
         method: 'POST',
         resolveWithFullResponse: true,
         uri: 'https://test.vendhq.com/api/1.0/token',
-        body: body,
-        json: true
+        formData: body
       };
       before(function () {
         connector.authSettings.authProxy.token.expires = Date.now() - 1000;
@@ -573,8 +571,7 @@ describe('VendConnector', function () {
         method: 'POST',
         resolveWithFullResponse: true,
         uri: 'https://test.vendhq.com/api/1.0/token',
-        body: body,
-        json: true
+        formData: body
       };
       var error;
       before(function (done) {
@@ -727,8 +724,7 @@ describe('VendConnector', function () {
       method: 'POST',
       resolveWithFullResponse: true,
       uri: 'https://test.vendhq.com/api/1.0/token',
-      body: body,
-      json: true
+      formData: body
     };
     before(function () {
       sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve());
