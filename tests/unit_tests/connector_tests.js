@@ -130,7 +130,7 @@ describe('VendConnector', function () {
     describe('GET', function () {
       describe('with no queryParams', function () {
         var response = {
-          body: 'body'
+          body: '{"body": "some body"}'
         };
         var options = {
           method: 'GET',
@@ -161,7 +161,7 @@ describe('VendConnector', function () {
       });
       describe('with queryParams object', function () {
         var response = {
-          body: 'body'
+          body: '{"body": "some body"}'
         };
         var queryParams = {
           query: 'query'
@@ -195,7 +195,7 @@ describe('VendConnector', function () {
       });
       describe('with queryParams in path', function () {
         var response = {
-          body: 'body'
+          body: '{"body": "some body"}'
         };
         var options = {
           method: 'GET',
@@ -226,7 +226,7 @@ describe('VendConnector', function () {
       });
       describe('with queryParams in path and object', function () {
         var response = {
-          body: 'body'
+          body: '{"body": "some body"}'
         };
         var queryParams = {
           query: 'query'
@@ -260,7 +260,7 @@ describe('VendConnector', function () {
       });
       describe('with duplicate queryParams in path and object', function () {
         var response = {
-          body: 'body'
+          body: '{"body": "some body"}'
         };
         var queryParams = {
           query: 'query'
@@ -296,7 +296,7 @@ describe('VendConnector', function () {
     describe('POST', function () {
       describe('with json string', function () {
         var response = {
-          body: 'body'
+          body: '{"body": "some body"}'
         };
         var data = '{"Staff":{"Name":"John"}}';
         var options = {
@@ -329,12 +329,12 @@ describe('VendConnector', function () {
             .to.have.been.called;
         });
         it('returns response', function () {
-          return expect(result).to.become(response);
+          return expect(result).to.become(JSON.parse(response.body));
         });
       });
       describe('with object', function () {
         var response = {
-          body: 'body'
+          body: '{"body": "some body"}'
         };
         var data = {
           Staff: {
@@ -370,14 +370,14 @@ describe('VendConnector', function () {
             .to.have.been.called;
         });
         it('returns response', function () {
-          return expect(result).to.become(response);
+          return expect(result).to.become(JSON.parse(response.body));
         });
       });
     });
     describe('PUT', function () {
       describe('with json string', function () {
         var response = {
-          body: 'body'
+          body: '{"body": "some body"}'
         };
         var data = '{"Staff":{"Name":"John"}}';
         var options = {
@@ -410,12 +410,12 @@ describe('VendConnector', function () {
             .to.have.been.called;
         });
         it('returns response', function () {
-          return expect(result).to.become(response);
+          return expect(result).to.become(JSON.parse(response.body));
         });
       });
       describe('with object', function () {
         var response = {
-          body: 'body'
+          body: '{"body": "some body"}'
         };
         var data = {
           Staff: {
@@ -451,7 +451,7 @@ describe('VendConnector', function () {
             .to.have.been.called;
         });
         it('returns response', function () {
-          return expect(result).to.become(response);
+          return expect(result).to.become(JSON.parse(response.body));
         });
       });
     });
