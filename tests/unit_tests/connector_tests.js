@@ -130,7 +130,7 @@ describe('VendConnector', function () {
     describe('GET', function () {
       describe('with no queryParams', function () {
         var response = {
-          body: '{"body": "some body"}',
+          body: {body: "some body"},
           statusCode: 200
         };
         var options = {
@@ -139,6 +139,7 @@ describe('VendConnector', function () {
           headers: {
             Authorization: 'Bearer <access_token>'
           },
+          json: true,
           resolveWithFullResponse: true
         };
         var result;
@@ -162,7 +163,7 @@ describe('VendConnector', function () {
       });
       describe('with queryParams object', function () {
         var response = {
-          body: '{"body": "some body"}',
+          body: {body: "some body"},
           statusCode: 200
         };
         var queryParams = {
@@ -174,6 +175,7 @@ describe('VendConnector', function () {
           headers: {
             Authorization: 'Bearer <access_token>'
           },
+          json: true,
           resolveWithFullResponse: true
         };
         var result;
@@ -197,7 +199,7 @@ describe('VendConnector', function () {
       });
       describe('with queryParams in path', function () {
         var response = {
-          body: '{"body": "some body"}',
+          body: {body: "some body"},
           statusCode: 200
         };
         var options = {
@@ -206,6 +208,7 @@ describe('VendConnector', function () {
           headers: {
             Authorization: 'Bearer <access_token>'
           },
+          json: true,
           resolveWithFullResponse: true
         };
         var result;
@@ -229,7 +232,7 @@ describe('VendConnector', function () {
       });
       describe('with queryParams in path and object', function () {
         var response = {
-          body: '{"body": "some body"}',
+          body: {body: "some body"},
           statusCode: 200
         };
         var queryParams = {
@@ -241,6 +244,7 @@ describe('VendConnector', function () {
           headers: {
             Authorization: 'Bearer <access_token>'
           },
+          json: true,
           resolveWithFullResponse: true
         };
         var result;
@@ -264,7 +268,7 @@ describe('VendConnector', function () {
       });
       describe('with duplicate queryParams in path and object', function () {
         var response = {
-          body: '{"body": "some body"}',
+          body: {body: "some body"},
           statusCode: 200
         };
         var queryParams = {
@@ -276,6 +280,7 @@ describe('VendConnector', function () {
           headers: {
             Authorization: 'Bearer <access_token>'
           },
+          json: true,
           resolveWithFullResponse: true
         };
         var result;
@@ -301,7 +306,7 @@ describe('VendConnector', function () {
     describe('POST', function () {
       describe('with json string', function () {
         var response = {
-          body: '{"body": "some body"}',
+          body: {body: "some body"},
           statusCode: 200
         };
         var data = '{"Staff":{"Name":"John"}}';
@@ -335,7 +340,7 @@ describe('VendConnector', function () {
             .to.have.been.called;
         });
         it('returns response', function () {
-          return expect(result).to.become(JSON.parse(response.body));
+          return expect(result).to.become(response.body);
         });
       });
       describe('with json string and statusCode not 200', function () {
@@ -380,7 +385,7 @@ describe('VendConnector', function () {
       });
       describe('with object', function () {
         var response = {
-          body: '{"body": "some body"}',
+          body: {body: "some body"},
           statusCode: 200
         };
         var data = {
@@ -417,14 +422,14 @@ describe('VendConnector', function () {
             .to.have.been.called;
         });
         it('returns response', function () {
-          return expect(result).to.become(JSON.parse(response.body));
+          return expect(result).to.become(response.body);
         });
       });
     });
     describe('PUT', function () {
       describe('with json string', function () {
         var response = {
-          body: '{"body": "some body"}',
+          body: {body: "some body"},
           statusCode: 200
         };
         var data = '{"Staff":{"Name":"John"}}';
@@ -458,12 +463,12 @@ describe('VendConnector', function () {
             .to.have.been.called;
         });
         it('returns response', function () {
-          return expect(result).to.become(JSON.parse(response.body));
+          return expect(result).to.become(response.body);
         });
       });
       describe('with object', function () {
         var response = {
-          body: '{"body": "some body"}',
+          body: {body: "some body"},
           statusCode: 200
         };
         var data = {
@@ -500,7 +505,7 @@ describe('VendConnector', function () {
             .to.have.been.called;
         });
         it('returns response', function () {
-          return expect(result).to.become(JSON.parse(response.body));
+          return expect(result).to.become(response.body);
         });
       });
     });
