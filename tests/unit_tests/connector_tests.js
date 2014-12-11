@@ -130,7 +130,8 @@ describe('VendConnector', function () {
     describe('GET', function () {
       describe('with no queryParams', function () {
         var response = {
-          body: '{"body": "some body"}'
+          body: '{"body": "some body"}',
+          statusCode: 200
         };
         var options = {
           method: 'GET',
@@ -161,7 +162,8 @@ describe('VendConnector', function () {
       });
       describe('with queryParams object', function () {
         var response = {
-          body: '{"body": "some body"}'
+          body: '{"body": "some body"}',
+          statusCode: 200
         };
         var queryParams = {
           query: 'query'
@@ -195,7 +197,8 @@ describe('VendConnector', function () {
       });
       describe('with queryParams in path', function () {
         var response = {
-          body: '{"body": "some body"}'
+          body: '{"body": "some body"}',
+          statusCode: 200
         };
         var options = {
           method: 'GET',
@@ -226,7 +229,8 @@ describe('VendConnector', function () {
       });
       describe('with queryParams in path and object', function () {
         var response = {
-          body: '{"body": "some body"}'
+          body: '{"body": "some body"}',
+          statusCode: 200
         };
         var queryParams = {
           query: 'query'
@@ -260,7 +264,8 @@ describe('VendConnector', function () {
       });
       describe('with duplicate queryParams in path and object', function () {
         var response = {
-          body: '{"body": "some body"}'
+          body: '{"body": "some body"}',
+          statusCode: 200
         };
         var queryParams = {
           query: 'query'
@@ -296,7 +301,8 @@ describe('VendConnector', function () {
     describe('POST', function () {
       describe('with json string', function () {
         var response = {
-          body: '{"body": "some body"}'
+          body: '{"body": "some body"}',
+          statusCode: 200
         };
         var data = '{"Staff":{"Name":"John"}}';
         var options = {
@@ -332,9 +338,50 @@ describe('VendConnector', function () {
           return expect(result).to.become(JSON.parse(response.body));
         });
       });
+      describe('with json string and statusCode not 200', function () {
+        var response = {
+          body: '{"body": "some body"}',
+          statusCode: 500,
+          headers: {}
+        };
+        var data = '{"Staff":{"Name":"John"}}';
+        var options = {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer <access_token>'
+          },
+          resolveWithFullResponse: true,
+          uri: 'https://test.vendhq.com/api/stock_transfers',
+          body: data,
+          json: true
+        };
+        var result;
+        before(function () {
+          sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+          sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+          result = connector.request('POST', '/stock_transfers', null, data);
+          return result;
+        });
+        after(function () {
+          connector.requestPromiseHelper.restore();
+          connector.refreshToken.restore();
+        });
+        it('calls requestPromiseHelper', function () {
+          expect(connector.requestPromiseHelper)
+            .to.have.been.calledWith(options);
+        });
+        it('calls refreshToken', function () {
+          expect(connector.refreshToken)
+            .to.have.been.called;
+        });
+        it('returns response', function () {
+          return expect(result).to.become(response.body);
+        });
+      });
       describe('with object', function () {
         var response = {
-          body: '{"body": "some body"}'
+          body: '{"body": "some body"}',
+          statusCode: 200
         };
         var data = {
           Staff: {
@@ -377,7 +424,8 @@ describe('VendConnector', function () {
     describe('PUT', function () {
       describe('with json string', function () {
         var response = {
-          body: '{"body": "some body"}'
+          body: '{"body": "some body"}',
+          statusCode: 200
         };
         var data = '{"Staff":{"Name":"John"}}';
         var options = {
@@ -415,7 +463,8 @@ describe('VendConnector', function () {
       });
       describe('with object', function () {
         var response = {
-          body: '{"body": "some body"}'
+          body: '{"body": "some body"}',
+          statusCode: 200
         };
         var data = {
           Staff: {
