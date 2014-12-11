@@ -467,9 +467,7 @@ describe('VendConnector', function () {
     describe('with an expired token and no refreshToken in response.body', function () {
       var response = {
         statusCode: 200,
-        body: {
-          access_token: 'accessToken'
-        }
+        body: '{\n    "access_token": "accessToken"\n}'
       };
       var body = {
         refresh_token: '<refresh_token>',
@@ -513,10 +511,7 @@ describe('VendConnector', function () {
     describe('with an expired token and a refreshToken in response.body', function () {
       var response = {
         statusCode: 200,
-        body: {
-          access_token: 'accessToken',
-          refresh_token: 'refreshToken'
-        }
+        body: '{\n    "access_token": "accessToken",\n   "refresh_token": "refreshToken"\n}'
       };
       var body = {
         refresh_token: '<refresh_token>',
@@ -647,7 +642,7 @@ describe('VendConnector', function () {
         done: sinon.stub()
       };
       var response = {
-        body: 'body'
+        body: '{\n    "access_token": "accessToken",\n   "refresh_token": "refreshToken"\n}'
       }
       before(function () {
         sinon.stub(connector, 'requestAccessToken').returns(BBPromise.resolve(response));
@@ -662,7 +657,7 @@ describe('VendConnector', function () {
       it('sets correct properties on bounce', function () {
         expect(bounce.get('code')).to.eql('code');
         expect(bounce.get('domainPrefix')).to.eql('domain_prefix');
-        expect(bounce.get('token')).to.eql(response.body);
+        expect(bounce.get('token')).to.eql(JSON.parse(response.body));
       });
       it('calls bounce.done', function () {
         expect(bounce.done).to.have.been.called;
