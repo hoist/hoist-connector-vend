@@ -341,7 +341,8 @@ describe('VendConnector', function () {
       describe('with json string and statusCode not 200', function () {
         var response = {
           body: '{"body": "some body"}',
-          statusCode: 500
+          statusCode: 500,
+          headers: {}
         };
         var data = '{"Staff":{"Name":"John"}}';
         var options = {
