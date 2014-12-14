@@ -3,11 +3,11 @@
 module.exports = function(event, done) {
 
   var vend = Hoist.connector('<key>');
-  vend.get('/products')
-  .then(function (products) {
+  vend.get('/stock_movements')
+  .then(function (stockMovements) {
     var promises = [];
-    for(var index = 0; index < products.length; index++) {
-      promises.push(Hoist.event.raise('product:found', products[index]));
+    for(var index = 0; index < stockMovements.length; index++) {
+      promises.push(Hoist.event.raise('stockMovement:found', stockMovements[index]));
     }
     return Hoist.promise.all(promises)
   })
