@@ -4,33 +4,70 @@
   "slug" : "vend",
   "url": "http://www.vendhq.com",
   "auth_types" : {
-    "Private": {
-      "setup_help": ""
+    "Public": {
+      "setup_help": "../samples/getting_started.md",
+      "requires_signing": true
     }
   },
   "settings": [{
     "key": "clientId",
     "type" : "text",
     "description": "Client Id",
-    "for_types": ["Private"]
+    "for_types": ["Public"]
   },{
     "key": "clientSecret",
     "type" : "text",
     "description": "Client Secret",
-    "for_types": ["Private"]
+    "for_types": ["Public"]
   },{
     "key": "redirectUri",
     "type" : "longtext",
     "description": "Redirect URI",
-    "for_types": ["Private"]
+    "for_types": ["Public"]
   }],
   "samples" : {
     "gettingStarted" : "./samples/getting-started.js"
   },
   "endpoints" : {
-    "/products" : {
-      "sample" : "./samples/getting-started.js",
+    "Stock Control" : {
+      "sample" : "./samples/stock_control.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/consignments.html"
+    },
+    "Customers" : {
+      "sample" : "./samples/customers.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/customers.html"
+    },
+    "Outlets" : {
+      "sample" : "./samples/outlets.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/outlets.html"
+    },
+    "Payment Types" : {
+      "sample" : "./samples/payment_types.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/payment-types.html"
+    },
+    "Products" : {
+      "sample" : "./samples/products.js",
       "docs" : "https://developers.vendhq.com/documentation/api/0.x/products.html"
+    },
+    "Register Sales" : {
+      "sample" : "./samples/register_sales.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/register-sales.html"
+    },
+    "Registers" : {
+      "sample" : "./samples/registers.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/registers.html"
+    },
+    "Suppliers" : {
+      "sample" : "./samples/suppliers.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/suppliers.html"
+    },
+    "Taxes" : {
+      "sample" : "./samples/taxes.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/taxes.html"
+    },
+    "Users" : {
+      "sample" : "./samples/users.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/users.html"
     }
   }
 }
