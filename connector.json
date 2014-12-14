@@ -19,11 +19,6 @@
     "type" : "text",
     "description": "Client Secret",
     "for_types": ["Public"]
-  },{
-    "key": "redirectUri",
-    "type" : "longtext",
-    "description": "Redirect URI",
-    "for_types": ["Public"]
   }],
   "samples" : {
     "getting_started" : "./samples/getting_started.js"
