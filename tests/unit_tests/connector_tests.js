@@ -15,8 +15,7 @@ describe('VendConnector', function () {
   before(function () {
     connector = new Vend({
       clientId: 'clientId',
-      clientSecret: 'clientSecret',
-      redirectUri: 'redirectUri'
+      clientSecret: 'clientSecret'
     });
     connector.authSettings = {
       authProxy: {
@@ -748,7 +747,7 @@ describe('VendConnector', function () {
       });
       it('calls redirect with correct url', function () {
         expect(bounce.redirect)
-          .to.have.been.calledWith('https://secure.vendhq.com/connect?response_type=code&client_id=clientId&redirect_uri=redirectUri');
+          .to.have.been.calledWith('https://secure.vendhq.com/connect?response_type=code&client_id=clientId&redirect_uri=https://bouncer.hoist.io/bounce');
       });
     });
   });
@@ -767,7 +766,7 @@ describe('VendConnector', function () {
       client_id: 'clientId',
       client_secret: 'clientSecret',
       grant_type: 'authorization_code',
-      redirect_uri: 'redirectUri'
+      redirect_uri: 'https://bouncer.hoist.io/bounce'
     };
     var options = {
       method: 'POST',
