@@ -26,7 +26,7 @@
     "for_types": ["Public"]
   }],
   "samples" : {
-    "gettingStarted" : "./samples/getting-started.js"
+    "gettingStarted" : "./samples/getting_started.js"
   },
   "endpoints" : {
     "Stock Control" : {
