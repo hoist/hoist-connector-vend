@@ -5,7 +5,7 @@
   "url": "http://www.vendhq.com",
   "auth_types" : {
     "Public": {
-      "setup_help": "../samples/getting_started.md",
+      "setup_help": "./samples/getting_started.md",
       "requires_signing": true
     }
   },
