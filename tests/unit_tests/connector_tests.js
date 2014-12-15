@@ -71,6 +71,21 @@ describe('VendConnector', function () {
       });
     });
   });
+  describe('#delete', function () {
+    var response = {};
+    var result;
+    before(function () {
+      sinon.stub(connector, 'request').returns(BBPromise.resolve(response));
+      result = connector.delete('/supplier/1');
+    });
+    after(function () {
+      connector.request.restore();
+    });
+    it('calls #request', function () {
+      expect(connector.request)
+        .to.have.been.calledWith('DELETE', '/supplier/1');
+    });
+  });
   describe('#post', function () {
     describe('with no data', function () {
       it('rejects', function () {
