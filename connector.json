@@ -13,12 +13,14 @@
     "key": "clientId",
     "type" : "text",
     "description": "Client Id",
-    "for_types": ["Public"]
+    "for_types": ["Public"],
+    "required": true
   },{
     "key": "clientSecret",
     "type" : "text",
     "description": "Client Secret",
-    "for_types": ["Public"]
+    "for_types": ["Public"],
+    "required": true
   }],
   "samples" : {
     "getting_started" : "./samples/getting_started.js"
