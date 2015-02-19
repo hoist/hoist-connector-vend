@@ -4,8 +4,8 @@ var Vend = require('../../lib/connector');
 var sinon = require('sinon');
 var BBPromise = require('bluebird');
 var expect = require('chai').expect;
-var requestPromise = require('request-promise');
-var config = require('config');
+// var requestPromise = require('request-promise');
+// var config = require('config');
 var errors = require('hoist-errors');
 
 /*jshint camelcase: false */
@@ -144,7 +144,9 @@ describe('VendConnector', function () {
     describe('GET', function () {
       describe('with no queryParams', function () {
         var response = {
-          body: {body: "some body"},
+          body: {
+            body: "some body"
+          },
           statusCode: 200
         };
         var options = {
@@ -177,7 +179,9 @@ describe('VendConnector', function () {
       });
       describe('with queryParams object', function () {
         var response = {
-          body: {body: "some body"},
+          body: {
+            body: "some body"
+          },
           statusCode: 200
         };
         var queryParams = {
@@ -213,7 +217,9 @@ describe('VendConnector', function () {
       });
       describe('with queryParams in path', function () {
         var response = {
-          body: {body: "some body"},
+          body: {
+            body: "some body"
+          },
           statusCode: 200
         };
         var options = {
@@ -246,7 +252,9 @@ describe('VendConnector', function () {
       });
       describe('with queryParams in path and object', function () {
         var response = {
-          body: {body: "some body"},
+          body: {
+            body: "some body"
+          },
           statusCode: 200
         };
         var queryParams = {
@@ -282,7 +290,9 @@ describe('VendConnector', function () {
       });
       describe('with duplicate queryParams in path and object', function () {
         var response = {
-          body: {body: "some body"},
+          body: {
+            body: "some body"
+          },
           statusCode: 200
         };
         var queryParams = {
@@ -320,7 +330,9 @@ describe('VendConnector', function () {
     describe('POST', function () {
       describe('with json string', function () {
         var response = {
-          body: {body: "some body"},
+          body: {
+            body: "some body"
+          },
           statusCode: 200
         };
         var data = '{"Staff":{"Name":"John"}}';
@@ -399,12 +411,14 @@ describe('VendConnector', function () {
       });
       describe('with object', function () {
         var response = {
-          body: {body: "some body"},
+          body: {
+            body: "some body"
+          },
           statusCode: 200
         };
         var data = {
           Staff: {
-            Name: "John"
+            Name: 'John'
           }
         };
         var options = {
@@ -439,11 +453,104 @@ describe('VendConnector', function () {
           return expect(result).to.become(response.body);
         });
       });
+      describe('to /webhooks', function () {
+        describe('with json string', function () {
+          var response = {
+            body: {
+              body: "some body"
+            },
+            statusCode: 200
+          };
+          var data = '{"Staff":{"Name":"John"}}';
+          var options = {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer <access_token>'
+            },
+            resolveWithFullResponse: true,
+            uri: 'https://test.vendhq.com/api/webhooks',
+            form: {
+              data: data
+            },
+            json: true
+          };
+          var result;
+          before(function () {
+            sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+            sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+            result = connector.request('POST', '/webhooks', null, data);
+            return result;
+          });
+          after(function () {
+            connector.requestPromiseHelper.restore();
+            connector.refreshToken.restore();
+          });
+          it('calls requestPromiseHelper', function () {
+            expect(connector.requestPromiseHelper)
+              .to.have.been.calledWith(options);
+          });
+          it('calls refreshToken', function () {
+            expect(connector.refreshToken)
+              .to.have.been.called;
+          });
+          it('returns response', function () {
+            return expect(result).to.become(response.body);
+          });
+        });
+        describe('with object', function () {
+          var response = {
+            body: {
+              body: "some body"
+            },
+            statusCode: 200
+          };
+          var data = {
+            Staff: {
+              Name: 'John'
+            }
+          };
+          var options = {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer <access_token>'
+            },
+            resolveWithFullResponse: true,
+            uri: 'https://test.vendhq.com/api/webhooks',
+            form: {
+              data: JSON.stringify(data)
+            },
+            json: true
+          };
+          var result;
+          before(function () {
+            sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+            sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+            result = connector.request('POST', '/webhooks', null, data);
+          });
+          after(function () {
+            connector.requestPromiseHelper.restore();
+            connector.refreshToken.restore();
+          });
+          it('calls requestPromiseHelper', function () {
+            expect(connector.requestPromiseHelper)
+              .to.have.been.calledWith(options);
+          });
+          it('calls refreshToken', function () {
+            expect(connector.refreshToken)
+              .to.have.been.called;
+          });
+          it('returns response', function () {
+            return expect(result).to.become(response.body);
+          });
+        });
+      });
     });
     describe('PUT', function () {
       describe('with json string', function () {
         var response = {
-          body: {body: "some body"},
+          body: {
+            body: "some body"
+          },
           statusCode: 200
         };
         var data = '{"Staff":{"Name":"John"}}';
@@ -482,12 +589,14 @@ describe('VendConnector', function () {
       });
       describe('with object', function () {
         var response = {
-          body: {body: "some body"},
+          body: {
+            body: "some body"
+          },
           statusCode: 200
         };
         var data = {
           Staff: {
-            Name: "John"
+            Name: 'John'
           }
         };
         var options = {
@@ -520,6 +629,97 @@ describe('VendConnector', function () {
         });
         it('returns response', function () {
           return expect(result).to.become(response.body);
+        });
+      });
+      describe('to /webhooks', function () {
+        describe('with json string', function () {
+          var response = {
+            body: {
+              body: "some body"
+            },
+            statusCode: 200
+          };
+          var data = '{"Staff":{"Name":"John"}}';
+          var options = {
+            method: 'PUT',
+            headers: {
+              Authorization: 'Bearer <access_token>'
+            },
+            resolveWithFullResponse: true,
+            uri: 'https://test.vendhq.com/api/webhooks',
+            form: {
+              data: data
+            },
+            json: true
+          };
+          var result;
+          before(function () {
+            sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+            sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+            result = connector.request('PUT', '/webhooks', null, data);
+            return result;
+          });
+          after(function () {
+            connector.requestPromiseHelper.restore();
+            connector.refreshToken.restore();
+          });
+          it('calls requestPromiseHelper', function () {
+            expect(connector.requestPromiseHelper)
+              .to.have.been.calledWith(options);
+          });
+          it('calls refreshToken', function () {
+            expect(connector.refreshToken)
+              .to.have.been.called;
+          });
+          it('returns response', function () {
+            return expect(result).to.become(response.body);
+          });
+        });
+        describe('with object', function () {
+          var response = {
+            body: {
+              body: "some body"
+            },
+            statusCode: 200
+          };
+          var data = {
+            Staff: {
+              Name: 'John'
+            }
+          };
+          var options = {
+            method: 'PUT',
+            headers: {
+              Authorization: 'Bearer <access_token>'
+            },
+            resolveWithFullResponse: true,
+            uri: 'https://test.vendhq.com/api/webhooks',
+            form: {
+              data: JSON.stringify(data)
+            },
+            json: true
+          };
+          var result;
+          before(function () {
+            sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve(response));
+            sinon.stub(connector, 'refreshToken').returns(BBPromise.resolve());
+            result = connector.request('PUT', '/webhooks', null, data);
+          });
+          after(function () {
+            connector.requestPromiseHelper.restore();
+            connector.refreshToken.restore();
+          });
+          it('calls requestPromiseHelper', function () {
+            expect(connector.requestPromiseHelper)
+              .to.have.been.calledWith(options);
+          });
+          it('calls refreshToken', function () {
+            expect(connector.refreshToken)
+              .to.have.been.called;
+          });
+          it('returns response', function () {
+            return expect(result).to.become(response.body);
+          });
         });
       });
     });
@@ -568,13 +768,13 @@ describe('VendConnector', function () {
       });
       it('calls requestPromiseHelper with correct arguments', function () {
         expect(connector.requestPromiseHelper).to.have.been.calledWith(options);
-      })
+      });
       it('sets authSettings.token', function () {
         expect(connector.authSettings.authProxy.token).to.eql({
           access_token: 'accessToken',
           refresh_token: '<refresh_token>'
         });
-      })
+      });
     });
     describe('with an expired token and a refreshToken in response.body', function () {
       var response = {
@@ -612,7 +812,7 @@ describe('VendConnector', function () {
       });
       it('calls requestPromiseHelper with correct arguments', function () {
         expect(connector.requestPromiseHelper).to.have.been.calledWith(options);
-      })
+      });
       it('sets authSettings.token', function () {
         expect(connector.authSettings.authProxy.token).to.eql({
           access_token: 'accessToken',
@@ -659,7 +859,7 @@ describe('VendConnector', function () {
       });
       it('calls requestPromiseHelper with correct arguments', function () {
         expect(connector.requestPromiseHelper).to.have.been.calledWith(options);
-      })
+      });
       it('rejects', function () {
         expect(error)
           .to.be.instanceOf(errors.connector.ConnectorError);
@@ -676,10 +876,10 @@ describe('VendConnector', function () {
       });
       it('does not call requestPromiseHelper', function () {
         expect(connector.requestPromiseHelper.called).to.eql(false);
-      })
+      });
       it('expects result to become a promise', function () {
         expect(result.then).to.be.a('function');
-      })
+      });
     });
     describe('with no authSettings', function () {
       before(function () {
@@ -711,7 +911,7 @@ describe('VendConnector', function () {
       };
       var response = {
         body: '{\n    "access_token": "accessToken",\n   "refresh_token": "refreshToken"\n}'
-      }
+      };
       before(function () {
         sinon.stub(connector, 'requestAccessToken').returns(BBPromise.resolve(response));
         return connector.receiveBounce(bounce);
@@ -746,7 +946,7 @@ describe('VendConnector', function () {
       };
       var response = {
         body: 'body'
-      }
+      };
       before(function () {
         sinon.stub(connector, 'requestAccessToken').returns(BBPromise.resolve(response));
         return connector.receiveBounce(bounce);
@@ -791,10 +991,10 @@ describe('VendConnector', function () {
     };
     before(function () {
       sinon.stub(connector, 'requestPromiseHelper').returns(BBPromise.resolve());
-      return connector.requestAccessToken(bounce)
+      return connector.requestAccessToken(bounce);
     });
     it('calls requestPromiseHelper with correct arguments', function () {
       expect(connector.requestPromiseHelper).to.have.been.calledWith(options);
-    })
+    });
   });
 });
