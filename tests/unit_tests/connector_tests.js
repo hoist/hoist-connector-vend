@@ -4,6 +4,7 @@ var Vend = require('../../lib/connector');
 var sinon = require('sinon');
 var BBPromise = require('bluebird');
 var expect = require('chai').expect;
+var _ = require('lodash');
 // var requestPromise = require('request-promise');
 // var config = require('config');
 var errors = require('hoist-errors');
@@ -899,12 +900,12 @@ describe('VendConnector', function () {
           code: 'code',
           domain_prefix: 'domain_prefix'
         },
-        proxy: {},
+        _token: {},
         get: function (name) {
-          return this.proxy[name];
+          return this._token[name];
         },
         set: function (name, value) {
-          this.proxy[name] = value;
+          this._token[name] = value;
           return BBPromise.resolve(this);
         },
         done: sinon.stub()
@@ -933,12 +934,12 @@ describe('VendConnector', function () {
     });
     describe('without bounce.query', function () {
       var bounce = {
-        proxy: {},
+        _token: {},
         get: function (name) {
-          return this.proxy[name];
+          return this._token[name];
         },
         set: function (name, value) {
-          this.proxy[name] = value;
+          this._token[name] = value;
           return BBPromise.resolve(this);
         },
         redirect: sinon.stub(),
@@ -968,12 +969,12 @@ describe('VendConnector', function () {
   });
   describe('#requestAccessToken', function () {
     var bounce = {
-      proxy: {
+      _token: {
         code: 'code',
         domainPrefix: 'test'
       },
       get: function (name) {
-        return this.proxy[name];
+        return this._token[name];
       }
     };
     var body = {
@@ -995,6 +996,347 @@ describe('VendConnector', function () {
     });
     it('calls requestPromiseHelper with correct arguments', function () {
       expect(connector.requestPromiseHelper).to.have.been.calledWith(options);
+    });
+  });
+  describe('#subscribe', function () {
+    describe('with token id on subscription meta for endpoint', function () {
+      var bounceToken = {
+        _token: {
+          _id: 'bounceTokenId'
+        },
+        get: function (name) {
+          return this._token[name];
+        }
+      };
+      var subscription = {
+        _id: 'subscriptionId',
+        endpoints: ['product.update', 'inventory.update'],
+        meta: {
+          'product.update': {},
+          'inventory.update': {}
+        },
+        get: function (name) {
+          return this.meta[name];
+        },
+        set: function (key, value) {
+          if (typeof this.meta[key] === 'object' && typeof value === 'object') {
+            this.meta[key] = _.merge(this.meta[key], value);
+          } else {
+            this.meta[key] = value;
+          }
+        }
+      };
+      subscription.meta['product.update'][bounceToken._token._id] = {
+        id: 'webhookId'
+      };
+      subscription.meta['inventory.update'][bounceToken._token._id] = {
+        id: 'webhookId'
+      };
+      before(function () {
+        sinon.stub(connector, 'authorize').returns(BBPromise.resolve({}));
+        sinon.spy(connector, 'post');
+        return connector.subscribe(subscription, bounceToken);
+      });
+      after(function () {
+        connector.authorize.restore();
+        connector.post.restore();
+      });
+      it('calls authorize', function () {
+        expect(connector.authorize).to.have.been.calledWith(bounceToken);
+      });
+      it('does not call post', function () {
+        expect(connector.post).to.have.not.been.called;
+      });
+    });
+    describe('without token id on subscription meta for endpoint', function () {
+      describe('with other token id on subcription meta for endpoint', function () {
+        describe('with successful response from vend', function () {
+          var bounceToken = {
+            _token: {
+              _id: 'bounceTokenId'
+            },
+            get: function (name) {
+              return this._token[name];
+            }
+          };
+          var subscription = {
+            _id: 'subscriptionId',
+            endpoints: ['product.update', 'inventory.update'],
+            meta: {
+              'product.update': {
+                otherBounceTokenId: {
+                  id: 'webhookId'
+                }
+              },
+              'inventory.update': {
+                otherBounceTokenId: {
+                  id: 'webhookId'
+                }
+              }
+            },
+            get: function (name) {
+              return this.meta[name];
+            },
+            set: function (key, value) {
+              if (typeof this.meta[key] === 'object' && typeof value === 'object') {
+                this.meta[key] = _.merge(this.meta[key], value);
+              } else {
+                this.meta[key] = value;
+              }
+            }
+          };
+          var productRes = {
+            id: "productWebhookId"
+          };
+          var inventoryRes = {
+            id: "inventoryWebhookId"
+          };
+          before(function () {
+            sinon.stub(connector, 'authorize').returns(BBPromise.resolve({}));
+            sinon.stub(connector, 'post').onFirstCall().returns(BBPromise.resolve(productRes));
+            connector.post.onSecondCall().returns(BBPromise.resolve(inventoryRes));
+            return connector.subscribe(subscription, bounceToken);
+          });
+          after(function () {
+            connector.authorize.restore();
+            connector.post.restore();
+          });
+          it('calls authorize', function () {
+            expect(connector.authorize).to.have.been.calledWith(bounceToken);
+          });
+          it('calls post', function () {
+            expect(connector.post).to.have.been.calledWith('/webhooks', {
+              type: 'product.update',
+              active: true,
+              url: 'https://endpoint.hoi.io/webhooks/' + subscription._id + '/product.update/' + bounceToken._token._id
+            });
+            expect(connector.post).to.have.been.calledWith('/webhooks', {
+              type: 'inventory.update',
+              active: true,
+              url: 'https://endpoint.hoi.io/webhooks/' + subscription._id + '/inventory.update/' + bounceToken._token._id
+            });
+          });
+          it('sets the response id on the subscription meta', function () {
+            var meta = {
+              'product.update': {
+                otherBounceTokenId: {
+                  id: 'webhookId'
+                }
+              },
+              'inventory.update': {
+                otherBounceTokenId: {
+                  id: 'webhookId'
+                }
+              }
+            };
+            meta['product.update'][bounceToken._token._id] = {
+              id: productRes.id
+            };
+            meta['inventory.update'][bounceToken._token._id] = {
+              id: inventoryRes.id
+            };
+            expect(subscription.meta).to.eql(meta);
+          });
+        });
+        describe('with unsuccessful response from vend', function () {
+          var bounceToken = {
+            _token: {
+              _id: 'bounceTokenId'
+            },
+            get: function (name) {
+              return this._token[name];
+            }
+          };
+          var subscription = {
+            _id: 'subscriptionId',
+            endpoints: ['product.update', 'inventory.update'],
+            meta: {
+              'product.update': {
+                otherBounceTokenId: {
+                  id: 'webhookId'
+                }
+              },
+              'inventory.update': {
+                otherBounceTokenId: {
+                  id: 'webhookId'
+                }
+              }
+            },
+            get: function (name) {
+              return this.meta[name];
+            },
+            set: function (key, value) {
+              if (typeof this.meta[key] === 'object' && typeof value === 'object') {
+                this.meta[key] = _.merge(this.meta[key], value);
+              } else {
+                this.meta[key] = value;
+              }
+            }
+          };
+          before(function () {
+            sinon.stub(connector, 'authorize').returns(BBPromise.resolve({}));
+            sinon.stub(connector, 'post').returns(BBPromise.resolve({}));
+            return connector.subscribe(subscription, bounceToken);
+          });
+          after(function () {
+            connector.authorize.restore();
+            connector.post.restore();
+          });
+          it('calls authorize', function () {
+            expect(connector.authorize).to.have.been.calledWith(bounceToken);
+          });
+          it('calls post', function () {
+            expect(connector.post).to.have.been.calledWith('/webhooks', {
+              type: 'product.update',
+              active: true,
+              url: 'https://endpoint.hoi.io/webhooks/' + subscription._id + '/product.update/' + bounceToken._token._id
+            });
+            expect(connector.post).to.have.been.calledWith('/webhooks', {
+              type: 'inventory.update',
+              active: true,
+              url: 'https://endpoint.hoi.io/webhooks/' + subscription._id + '/inventory.update/' + bounceToken._token._id
+            });
+          });
+          it('does not change the subscription meta', function () {
+            var meta = {
+              'product.update': {
+                otherBounceTokenId: {
+                  id: 'webhookId'
+                }
+              },
+              'inventory.update': {
+                otherBounceTokenId: {
+                  id: 'webhookId'
+                }
+              }
+            };
+            expect(subscription.meta).to.eql(meta);
+          });
+        });
+      });
+      describe('without other token id on subcription meta for endpoint', function () {
+        describe('with successful response from vend', function () {
+          var bounceToken = {
+            _token: {
+              _id: 'bounceTokenId'
+            },
+            get: function (name) {
+              return this._token[name];
+            }
+          };
+          var subscription = {
+            _id: 'subscriptionId',
+            endpoints: ['product.update', 'inventory.update'],
+            meta: {},
+            get: function (name) {
+              return this.meta[name];
+            },
+            set: function (key, value) {
+              if (typeof this.meta[key] === 'object' && typeof value === 'object') {
+                this.meta[key] = _.merge(this.meta[key], value);
+              } else {
+                this.meta[key] = value;
+              }
+            }
+          };
+          var productRes = {
+            id: "productWebhookId"
+          };
+          var inventoryRes = {
+            id: "inventoryWebhookId"
+          };
+          before(function () {
+            sinon.stub(connector, 'authorize').returns(BBPromise.resolve({}));
+            sinon.stub(connector, 'post').onFirstCall().returns(BBPromise.resolve(productRes));
+            connector.post.onSecondCall().returns(BBPromise.resolve(inventoryRes));
+            return connector.subscribe(subscription, bounceToken);
+          });
+          after(function () {
+            connector.authorize.restore();
+            connector.post.restore();
+          });
+          it('calls authorize', function () {
+            expect(connector.authorize).to.have.been.calledWith(bounceToken);
+          });
+          it('calls post', function () {
+            expect(connector.post).to.have.been.calledWith('/webhooks', {
+              type: 'product.update',
+              active: true,
+              url: 'https://endpoint.hoi.io/webhooks/' + subscription._id + '/product.update/' + bounceToken._token._id
+            });
+            expect(connector.post).to.have.been.calledWith('/webhooks', {
+              type: 'inventory.update',
+              active: true,
+              url: 'https://endpoint.hoi.io/webhooks/' + subscription._id + '/inventory.update/' + bounceToken._token._id
+            });
+          });
+          it('sets the response id on the subscription meta', function () {
+            var meta = {
+              'product.update': {},
+              'inventory.update': {}
+            };
+            meta['product.update'][bounceToken._token._id]  = {
+              id: productRes.id
+            }
+            meta['inventory.update'][bounceToken._token._id]  = {
+              id: inventoryRes.id
+            }
+            expect(subscription.meta).to.eql(meta);
+          });
+        });
+        describe('with unsuccessful response from vend', function () {
+          var bounceToken = {
+            _token: {
+              _id: 'bounceTokenId'
+            },
+            get: function (name) {
+              return this._token[name];
+            }
+          };
+          var subscription = {
+            _id: 'subscriptionId',
+            endpoints: ['product.update', 'inventory.update'],
+            meta: {},
+            get: function (name) {
+              return this.meta[name];
+            },
+            set: function (key, value) {
+              if (typeof this.meta[key] === 'object' && typeof value === 'object') {
+                this.meta[key] = _.merge(this.meta[key], value);
+              } else {
+                this.meta[key] = value;
+              }
+            }
+          };
+          before(function () {
+            sinon.stub(connector, 'authorize').returns(BBPromise.resolve({}));
+            sinon.stub(connector, 'post').returns(BBPromise.resolve({}));
+            return connector.subscribe(subscription, bounceToken);
+          });
+          after(function () {
+            connector.authorize.restore();
+            connector.post.restore();
+          });
+          it('calls authorize', function () {
+            expect(connector.authorize).to.have.been.calledWith(bounceToken);
+          });
+          it('calls post', function () {
+            expect(connector.post).to.have.been.calledWith('/webhooks', {
+              type: 'product.update',
+              active: true,
+              url: 'https://endpoint.hoi.io/webhooks/' + subscription._id + '/product.update/' + bounceToken._token._id
+            });
+            expect(connector.post).to.have.been.calledWith('/webhooks', {
+              type: 'inventory.update',
+              active: true,
+              url: 'https://endpoint.hoi.io/webhooks/' + subscription._id + '/inventory.update/' + bounceToken._token._id
+            });
+          });
+          it('does not change the subscription meta', function () {
+            expect(subscription.meta).to.eql({});
+          });
+        });
+      });
     });
   });
 });
