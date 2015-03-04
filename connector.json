@@ -65,6 +65,34 @@
     "Users" : {
       "sample" : "./samples/users.js",
       "docs" : "https://developers.vendhq.com/documentation/api/0.x/users.html"
+    },
+    "Webhooks" : {
+      "sample" : "./samples/webhooks.js",
+      "docs" : "https://developers.vendhq.com/documentation/api/0.x/webhooks.html"
+    },
+    "product.update" : {
+      "docs" : "https://developers.vendhq.com/documentation/webhooks.html#product-update",
+      "subscribe" : true
+    },
+    "inventory.update" : {
+      "docs" : "https://developers.vendhq.com/documentation/webhooks.html#inventory-update",
+      "subscribe" : true
+    },
+    "consignment.sent" : {
+      "docs" : "https://developers.vendhq.com/documentation/webhooks.html#consignment-sent",
+      "subscribe" : true
+    },
+    "consignment.receive" : {
+      "docs" : "https://developers.vendhq.com/documentation/webhooks.html#consignmentreceive",
+      "subscribe" : true
+    },
+    "customer.update" : {
+      "docs" : "https://developers.vendhq.com/documentation/webhooks.html#customer-update",
+      "subscribe" : true
+    },
+    "register_sale.update" : {
+      "docs" : "https://developers.vendhq.com/documentation/webhooks.html#register-sale-update",
+      "subscribe" : true
     }
   }
 }
