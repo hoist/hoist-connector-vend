@@ -26,11 +26,13 @@
     "gulp-mocha": "^1.1.0",
     "jshint-growl-reporter": "^0.1.1",
     "jshint-stylish": "^0.4.0",
+    "hoist-model": "git://github.com/hoist/hoist-model",
+    "hoist-model-wrappers": "git://github.com/hoist/hoist-model-wrappers",
     "run-sequence": "^0.3.6",
     "sinon": "^1.10.3",
     "sinon-chai": "^2.5.0"
   },
-  "homepage": "https://github.com/hoist/hoist-connector-xero",
+  "homepage": "https://github.com/hoist/hoist-connector-vend",
   "dependencies": {
     "bluebird": "^2.3.11",
     "config": "^1.8.1",

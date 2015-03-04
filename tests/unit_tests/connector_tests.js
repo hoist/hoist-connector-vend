@@ -8,6 +8,11 @@ var _ = require('lodash');
 // var requestPromise = require('request-promise');
 // var config = require('config');
 var errors = require('hoist-errors');
+var Subscription = require('hoist-model').Subscription;
+var BouncerToken = require('hoist-model').BouncerToken;
+var SubscriptionController = require('hoist-model-wrappers').subscriptionController;
+var Authorization = require('hoist-model-wrappers').authorization;
+
 
 /*jshint camelcase: false */
 
@@ -1275,12 +1280,12 @@ describe('VendConnector', function () {
               'product.update': {},
               'inventory.update': {}
             };
-            meta['product.update'][bounceToken._token._id]  = {
+            meta['product.update'][bounceToken._token._id] = {
               id: productRes.id
-            }
-            meta['inventory.update'][bounceToken._token._id]  = {
+            };
+            meta['inventory.update'][bounceToken._token._id] = {
               id: inventoryRes.id
-            }
+            };
             expect(subscription.meta).to.eql(meta);
           });
         });
@@ -1336,6 +1341,200 @@ describe('VendConnector', function () {
             expect(subscription.meta).to.eql({});
           });
         });
+      });
+    });
+  });
+  describe('#unsubscribe', function () {
+    describe('with no endpoint meta', function () {
+      var bouncerToken = new BouncerToken({
+        _id: 'bounceTokenId',
+        state: {}
+      });
+      var authorization = new Authorization(bouncerToken);
+      var subscription = new Subscription({
+        _id: 'subscriptionId',
+        endpoints: ['product.update', 'inventory.update'],
+      });
+      var subscriptionController = new SubscriptionController(subscription);
+      before(function () {
+        sinon.stub(connector, 'authorize').returns(BBPromise.resolve({}));
+        sinon.stub(connector, 'delete').returns(BBPromise.resolve({
+          status: 'success'
+        }));
+        sinon.stub(subscription, 'saveAsync').returns(BBPromise.resolve([subscription]));
+        return connector.unsubscribe(subscriptionController, authorization, 'product.update');
+      });
+      after(function () {
+        subscription.saveAsync.restore();
+        connector.authorize.restore();
+        connector.delete.restore();
+      });
+      it('calls authorize', function () {
+        expect(connector.authorize).to.have.been.calledWith(authorization);
+      });
+      it('calls delete', function () {
+        expect(connector.delete).to.not.have.been.called;
+      });
+    });
+    describe('with no token in endpoint meta', function () {
+      var bouncerToken = new BouncerToken({
+        _id: 'bounceTokenId',
+        state: {}
+      });
+      var authorization = new Authorization(bouncerToken);
+      var subscription = new Subscription({
+        _id: 'subscriptionId',
+        endpoints: ['product.update', 'inventory.update'],
+        meta: {
+          other: 'value'
+        },
+      });
+      subscription.meta['product.update'] = {};
+      var subscriptionController = new SubscriptionController(subscription);
+      before(function () {
+        sinon.stub(connector, 'authorize').returns(BBPromise.resolve({}));
+        sinon.stub(connector, 'delete').returns(BBPromise.resolve({
+          status: 'success'
+        }));
+        sinon.stub(subscription, 'saveAsync').returns(BBPromise.resolve([subscription]));
+        return connector.unsubscribe(subscriptionController, authorization, 'product.update');
+      });
+      after(function () {
+        subscription.saveAsync.restore();
+        connector.authorize.restore();
+        connector.delete.restore();
+      });
+      it('calls authorize', function () {
+        expect(connector.authorize).to.have.been.calledWith(authorization);
+      });
+      it('calls delete', function () {
+        expect(connector.delete).to.not.have.been.called;
+      });});
+    describe('with no id in token in endpoint meta', function () {
+      var bouncerToken = new BouncerToken({
+        _id: 'bounceTokenId',
+        state: {}
+      });
+      var authorization = new Authorization(bouncerToken);
+      var subscription = new Subscription({
+        _id: 'subscriptionId',
+        endpoints: ['product.update', 'inventory.update'],
+        meta: {
+          other: 'value'
+        }
+      });
+      subscription.meta['product.update'] = {};
+      subscription.meta['product.update'][bouncerToken._id] = {};
+      var subscriptionController = new SubscriptionController(subscription);
+      before(function () {
+        sinon.stub(connector, 'authorize').returns(BBPromise.resolve({}));
+        sinon.stub(connector, 'delete').returns(BBPromise.resolve({
+          status: 'success'
+        }));
+        sinon.stub(subscription, 'saveAsync').returns(BBPromise.resolve([subscription]));
+        return connector.unsubscribe(subscriptionController, authorization, 'product.update');
+      });
+      after(function () {
+        subscription.saveAsync.restore();
+        connector.authorize.restore();
+        connector.delete.restore();
+      });
+      it('calls authorize', function () {
+        expect(connector.authorize).to.have.been.calledWith(authorization);
+      });
+      it('calls delete', function () {
+        expect(connector.delete).to.not.have.been.called;
+      });});
+    describe('with successful response from vend', function () {
+      var bouncerToken = new BouncerToken({
+        _id: 'bounceTokenId',
+        state: {}
+      });
+      var authorization = new Authorization(bouncerToken);
+      var subscription = new Subscription({
+        _id: 'subscriptionId',
+        endpoints: ['product.update', 'inventory.update'],
+        meta: {
+          other: 'value'
+        },
+      });
+      subscription.meta['product.update'] = {};
+      subscription.meta['product.update'][bouncerToken._id] = {
+        id: 'webhookId'
+      };
+      var subscriptionController = new SubscriptionController(subscription);
+      before(function () {
+        sinon.stub(connector, 'authorize').returns(BBPromise.resolve({}));
+        sinon.stub(connector, 'delete').returns(BBPromise.resolve({
+          status: 'success'
+        }));
+        sinon.stub(subscription, 'saveAsync').returns(BBPromise.resolve([subscription]));
+        return connector.unsubscribe(subscriptionController, authorization, 'product.update');
+      });
+      after(function () {
+        subscription.saveAsync.restore();
+        connector.authorize.restore();
+        connector.delete.restore();
+      });
+      it('calls authorize', function () {
+        expect(connector.authorize).to.have.been.calledWith(authorization);
+      });
+      it('calls delete', function () {
+        expect(connector.delete).to.have.been.calledWith('/webhooks/webhookId');
+      });
+      it('deletes the token id on the subscription meta', function () {
+        var meta = {
+          other: 'value'
+        };
+        meta['product.update'] = {};
+        expect(subscription.meta).to.eql(meta);
+      });
+    });
+    describe('with unsuccessful response from vend', function () {
+      var bouncerToken = new BouncerToken({
+        _id: 'bounceTokenId',
+        state: {}
+      });
+      var authorization = new Authorization(bouncerToken);
+      var subscription = new Subscription({
+        _id: 'subscriptionId',
+        endpoints: ['product.update', 'inventory.update'],
+        meta: {
+          other: 'value'
+        },
+      });
+      subscription.meta['product.update'] = {};
+      subscription.meta['product.update'][bouncerToken._id] = {
+        id: 'webhookId'
+      };
+      var subscriptionController = new SubscriptionController(subscription);
+      before(function () {
+        sinon.stub(connector, 'authorize').returns(BBPromise.resolve({}));
+        sinon.stub(connector, 'delete').returns(BBPromise.resolve({}));
+        sinon.stub(subscription, 'saveAsync').returns(BBPromise.resolve([subscription]));
+        return connector.unsubscribe(subscriptionController, authorization, 'product.update');
+      });
+      after(function () {
+        subscription.saveAsync.restore();
+        connector.authorize.restore();
+        connector.delete.restore();
+      });
+      it('calls authorize', function () {
+        expect(connector.authorize).to.have.been.calledWith(authorization);
+      });
+      it('calls delete', function () {
+        expect(connector.delete).to.have.been.calledWith('/webhooks/webhookId');
+      });
+      it('does not delete the token id on the subscription meta', function () {
+        var meta = {
+          other: 'value'
+        };
+        meta['product.update'] = {
+          bounceTokenId: {
+            id: 'webhookId'
+          }
+        };
+        expect(subscription.meta).to.eql(meta);
       });
     });
   });
