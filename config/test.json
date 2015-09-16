@@ -1,4 +1,7 @@
 {
-    "clientId": "jxSSBdL2U2N3hZOq1fN20o16hZIqvy7H",
-    "clientSecret": "ZyuLcPzIAPa9gJKSm8P9FyZY8RDL7zDo"
+  "Hoist": {
+    "domains": {
+      "bouncer": "bouncer.hoist.io"
+    }
+  }
 }

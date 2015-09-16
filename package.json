@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/hoist/hoist-connector-vend/issues"
   },
-  "homepage": "https://github.com/hoist/hoist-connector-vend",
+  "homepage": "https://github.com/hoist/hoist-connector-xero",
   "devDependencies": {
     "chai": "^1.9.1",
     "chai-as-promised": "^4.1.1",
@@ -30,12 +30,11 @@
     "sinon": "^1.10.3",
     "sinon-chai": "^2.5.0"
   },
-  "homepage": "https://github.com/hoist/hoist-connector-xero",
   "dependencies": {
+    "@hoist/errors": "^1.0.3",
+    "@hoist/logger": "^1.0.5",
     "bluebird": "^2.3.11",
     "config": "^1.8.1",
-    "hoist-logger": "git://github.com/hoist/hoist-logger",
-    "hoist-errors": "git://github.com/hoist/hoist-errors",
     "lodash": "^2.4.1",
     "request": "^2.48.0",
     "request-promise": "^0.3.2"
