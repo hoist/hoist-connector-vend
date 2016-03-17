@@ -8,8 +8,8 @@ User=core
 Type=oneshot
 ExecStartPre=-/usr/bin/docker kill vend-connector-deploy
 ExecStartPre=-/usr/bin/docker rm vend-connector-deploy
-ExecStartPre=-/usr/bin/docker pull quay.io/hoist/connector-vend:master
-ExecStart=/usr/bin/docker run -h vend-connector-deploy --name vend-connector-deploy -e "ROOT_CONNECTOR_DIR=/shares/connectors" --volumes-from config -P quay.io/hoist/connector-vend:master
+ExecStartPre=-/usr/bin/docker pull hoist/connector-vend:master
+ExecStart=/usr/bin/docker run -h vend-connector-deploy --name vend-connector-deploy -e "ROOT_CONNECTOR_DIR=/shares/connectors" --volumes-from config -P hoist/connector-vend:master
 ExecStop=/usr/bin/docker stop vend-connector-deploy
 ExecStopPost=-/usr/bin/docker kill vend-connector-deploy
 ExecStopPost=-/usr/bin/docker rm vend-connector-deploy

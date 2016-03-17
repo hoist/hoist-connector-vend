@@ -17,26 +17,27 @@
   },
   "homepage": "https://github.com/hoist/hoist-connector-xero",
   "devDependencies": {
-    "chai": "^1.9.1",
-    "chai-as-promised": "^4.1.1",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.2.0",
     "gulp": "^3.8.8",
-    "gulp-istanbul": "^0.3.0",
+    "gulp-istanbul": "^0.10.3",
     "gulp-istanbul-enforcer": "^1.0.3",
-    "gulp-jshint": "^1.8.4",
-    "gulp-mocha": "^1.1.0",
-    "jshint-growl-reporter": "^0.1.1",
-    "jshint-stylish": "^0.4.0",
-    "run-sequence": "^0.3.6",
+    "gulp-jshint": "^2.0.0",
+    "gulp-mocha": "^2.2.0",
+    "jshint": "^2.9.1",
+    "jshint-growl-reporter": "^1.0.0",
+    "jshint-stylish": "^2.1.0",
+    "run-sequence": "^1.1.5",
     "sinon": "^1.10.3",
     "sinon-chai": "^2.5.0"
   },
   "dependencies": {
-    "@hoist/errors": "^1.0.3",
+    "@hoist/errors": "^2.0.2",
     "@hoist/logger": "^1.0.5",
-    "bluebird": "^2.3.11",
+    "bluebird": "^3.3.4",
     "config": "^1.8.1",
-    "lodash": "^2.4.1",
+    "lodash": "^4.6.1",
     "request": "^2.48.0",
-    "request-promise": "^0.3.2"
+    "request-promise": "^2.0.1"
   }
 }
