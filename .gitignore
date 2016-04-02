@@ -45,3 +45,4 @@ log/*
 config/runtime.json
 .queues
 .npmrc
+lib
