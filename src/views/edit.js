@@ -46,18 +46,6 @@ class EditForm extends C.View {
             </form>
           </C.Column>
         </C.Panel>
-        <C.Panel name="Advanced" slug="advanced">
-          <div>
-            <C.PageHeader
-              title="Delete Connector."
-              subTitle="This will delete any user data associated with this connector" />
-            <UI.FormElements.Button
-              loading={this.props.saving}
-              text='Delete'
-              type="large danger"
-              onClick={this.props.deleteConnector} />
-          </div>
-        </C.Panel>
       </C.Page>
     );
   }
