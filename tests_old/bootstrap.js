@@ -18,11 +18,3 @@ BBPromise.onUnhandledRejectionHandled(function (promise) {
   unhandledPromises.splice(index, 1);
   //Update the debugger UI
 });
-
-after(function () {
-  if (unhandledPromises.length > 0) {
-    console.error('unhandled promise exceptions', unhandledPromises);
-
-  }
-  expect(unhandledPromises.length).to.eql(0);
-});

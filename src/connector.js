@@ -1,5 +1,4 @@
 'use strict';
-
 var BBPromise = require('bluebird');
 var requestPromise = require('request-promise');
 var logger = require('@hoist/logger');
@@ -69,7 +68,7 @@ VendConnector.prototype.request = function (method, path, queryParams, data) {
       headers: headers,
       method: method,
       json: true,
-      resolveWithFullResponse: true
+      resolveWithFullResponse: true,
     };
 
     if (method === 'PUT' || method === 'POST') {
@@ -91,12 +90,13 @@ VendConnector.prototype.request = function (method, path, queryParams, data) {
       }
       options.uri = url.format(parsedUrl);
     }
-    return self.requestPromiseHelper(options).then(function (response) {
-      logger.info({
-        responseBody: response.body
-      }, 'inside hoist-connector-vend.request');
-      return response.body;
-    });
+    return self.requestPromiseHelper(options)
+      .then(function (response) {
+        logger.info({
+          responseBody: response.body
+        }, 'inside hoist-connector-vend.request');
+        return response.body;
+      });
   });
 };
 
@@ -115,16 +115,18 @@ VendConnector.prototype.refreshToken = function () {
         formData: body,
         resolveWithFullResponse: true
       };
-      return this.requestPromiseHelper(options).bind(this).then(function (response) {
-        var token = response.body;
-        if (response.statusCode === 200) {
-          token = JSON.parse(token);
-          token.refresh_token = token.refresh_token ? token.refresh_token : this.authSettings.get('token').refresh_token;
-          return this.authSettings.set('token', token);
-        } else {
-          throw new errors.connector.ConnectorError();
-        }
-      });
+      return this.requestPromiseHelper(options)
+        .bind(this)
+        .then(function (response) {
+          var token = response.body;
+          if (response.statusCode === 200) {
+            token = JSON.parse(token);
+            token.refresh_token = token.refresh_token ? token.refresh_token : this.authSettings.get('token').refresh_token;
+            return this.authSettings.set('token', token);
+          } else {
+            throw new errors.connector.ConnectorError();
+          }
+        });
     }
     return BBPromise.resolve();
   } else {
@@ -140,20 +142,27 @@ VendConnector.prototype.authorize = function (authSettings) {
 
 VendConnector.prototype.receiveBounce = function (bounce) {
   if (bounce.query && bounce.query.code) {
-    return bounce.set('code', bounce.query.code).then(function () {
-      return bounce.set('domainPrefix', bounce.query.domain_prefix);
-    }).bind(this).then(function () {
-      return this.requestAccessToken(bounce);
-    }).then(function (response) {
-      return bounce.set('token', JSON.parse(response.body));
-    }).then(function () {
-      bounce.done();
-    }).catch(function (err) {
-      logger.error(err);
-      bounce.done(err);
-    });
+    return bounce.set('code', bounce.query.code)
+      .then(function () {
+        return bounce.set('domainPrefix', bounce.query.domain_prefix);
+      })
+      .bind(this)
+      .then(function () {
+        return this.requestAccessToken(bounce);
+      })
+      .then(function (response) {
+        return bounce.set('token', JSON.parse(response.body));
+      })
+      .then(function () {
+        bounce.done();
+      })
+      .catch(function (err) {
+        logger.error(err);
+        bounce.done(err);
+      });
   } else {
-    return bounce.redirect(authBaseUrl + '?response_type=code&client_id=' + this.settings.clientId + '&redirect_uri=' + redirectUri);
+    return bounce.redirect(authBaseUrl + '?response_type=code&client_id=' +
+      this.settings.clientId + '&redirect_uri=' + redirectUri);
   }
 };
 
@@ -182,4 +191,3 @@ VendConnector.prototype.requestPromiseHelper = function requestPromiseHelper(opt
 };
 
 module.exports = VendConnector;
-//# sourceMappingURL=connector.js.map

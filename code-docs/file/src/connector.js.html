@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/connector.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <a data-ice="repoURL" href="https://github.com/hoist/hoist-connector-vend.git" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">views</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/views/edit.js~EditForm.html">EditForm</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/connector.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">&apos;use strict&apos;;
+var BBPromise = require(&apos;bluebird&apos;);
+var requestPromise = require(&apos;request-promise&apos;);
+var logger = require(&apos;@hoist/logger&apos;);
+var url = require(&apos;url&apos;);
+var errors = require(&apos;@hoist/errors&apos;);
+var _ = require(&apos;lodash&apos;);
+var _path = require(&apos;path&apos;);
+var apiUrl = &apos;.vendhq.com/api&apos;;
+var config = require(&apos;config&apos;);
+var authBaseUrl = &apos;https://secure.vendhq.com/connect&apos;;
+var redirectUri = &apos;https://&apos; + config.get(&apos;Hoist.domains.bouncer&apos;) + &apos;/bounce&apos;;
+
+/*jshint camelcase: false */
+
+function VendConnector(settings) {
+  logger.info({
+    settings: settings
+  }, &apos;constructed vend-connector&apos;);
+  this.settings = settings;
+}
+
+VendConnector.prototype.get = function (url, queryParams) {
+  logger.info(&apos;inside hoist-connector-vend.get&apos;);
+  return this.request(&apos;GET&apos;, url, queryParams);
+};
+
+VendConnector.prototype.post = function (url, data) {
+  logger.info(&apos;inside hoist-connector-vend.post&apos;);
+  if (!data) {
+    throw new errors.connector.request.InvalidError(&apos;no data specified in post&apos;);
+  }
+  return this.request(&apos;POST&apos;, url, null, data);
+};
+
+VendConnector.prototype.put = function (url, data) {
+  logger.info(&apos;inside hoist-connector-vend.put&apos;);
+  if (!data) {
+    throw new errors.connector.request.InvalidError(&apos;no data specified in put&apos;);
+  }
+  return this.request(&apos;PUT&apos;, url, null, data);
+};
+
+VendConnector.prototype.delete = function (url) {
+  logger.info(&apos;inside hoist-connector-vend.delete&apos;);
+  return this.request(&apos;DELETE&apos;, url);
+};
+
+VendConnector.prototype.request = function (method, path, queryParams, data) {
+  if (!path) {
+    throw new errors.connector.request.InvalidError(&apos;no path specified&apos;);
+  }
+
+  data = data ? data : null;
+  logger.info({
+    method: method,
+    path: path
+  }, &apos;inside hoist-connector-vend.request&apos;);
+  //check if token is expired
+  var self = this;
+  return this.refreshToken().then(function () {
+    var headers = {
+      Authorization: &apos;Bearer &apos; + self.authSettings.get(&apos;token&apos;).access_token
+    };
+    var uri = &apos;https://&apos; + self.authSettings.get(&apos;domainPrefix&apos;) + _path.join(apiUrl, path);
+    var options = {
+      uri: uri,
+      headers: headers,
+      method: method,
+      json: true,
+      resolveWithFullResponse: true,
+    };
+
+    if (method === &apos;PUT&apos; || method === &apos;POST&apos;) {
+      if (path.search(/^\/?webhooks/i) !== -1) {
+        options.form = {
+          data: typeof data === &apos;string&apos; ? data : JSON.stringify(data)
+        };
+      } else {
+        options.body = data;
+      }
+    }
+
+    if (method === &apos;GET&apos;) {
+      var parsedUrl = url.parse(options.uri, true);
+      parsedUrl.search = null;
+      var query = parsedUrl.query;
+      if (queryParams) {
+        query = _.extend(query, queryParams);
+      }
+      options.uri = url.format(parsedUrl);
+    }
+    return self.requestPromiseHelper(options)
+      .then(function (response) {
+        logger.info({
+          responseBody: response.body
+        }, &apos;inside hoist-connector-vend.request&apos;);
+        return response.body;
+      });
+  });
+};
+
+VendConnector.prototype.refreshToken = function () {
+  if (this.authSettings) {
+    if (this.authSettings.get(&apos;token&apos;).expires &lt; Date.now()) {
+      var body = {
+        refresh_token: this.authSettings.get(&apos;token&apos;).refresh_token,
+        client_id: this.settings.clientId,
+        client_secret: this.settings.clientSecret,
+        grant_type: &apos;refresh_token&apos;
+      };
+      var options = {
+        method: &apos;POST&apos;,
+        uri: &apos;https://&apos; + this.authSettings.get(&apos;domainPrefix&apos;) + apiUrl + &apos;/1.0/token&apos;,
+        formData: body,
+        resolveWithFullResponse: true
+      };
+      return this.requestPromiseHelper(options)
+        .bind(this)
+        .then(function (response) {
+          var token = response.body;
+          if (response.statusCode === 200) {
+            token = JSON.parse(token);
+            token.refresh_token = token.refresh_token ? token.refresh_token : this.authSettings.get(&apos;token&apos;).refresh_token;
+            return this.authSettings.set(&apos;token&apos;, token);
+          } else {
+            throw new errors.connector.ConnectorError();
+          }
+        });
+    }
+    return BBPromise.resolve();
+  } else {
+    throw new errors.connector.request.UnauthorizedError();
+  }
+};
+
+/* istanbul ignore next */
+VendConnector.prototype.authorize = function (authSettings) {
+  this.authSettings = authSettings;
+  return BBPromise.resolve({});
+};
+
+VendConnector.prototype.receiveBounce = function (bounce) {
+  if (bounce.query &amp;&amp; bounce.query.code) {
+    return bounce.set(&apos;code&apos;, bounce.query.code)
+      .then(function () {
+        return bounce.set(&apos;domainPrefix&apos;, bounce.query.domain_prefix);
+      })
+      .bind(this)
+      .then(function () {
+        return this.requestAccessToken(bounce);
+      })
+      .then(function (response) {
+        return bounce.set(&apos;token&apos;, JSON.parse(response.body));
+      })
+      .then(function () {
+        bounce.done();
+      })
+      .catch(function (err) {
+        logger.error(err);
+        bounce.done(err);
+      });
+  } else {
+    return bounce.redirect(authBaseUrl + &apos;?response_type=code&amp;client_id=&apos; +
+      this.settings.clientId + &apos;&amp;redirect_uri=&apos; + redirectUri);
+  }
+};
+
+VendConnector.prototype.requestAccessToken = function (bounce) {
+  var body = {
+    code: bounce.get(&apos;code&apos;),
+    client_id: this.settings.clientId,
+    client_secret: this.settings.clientSecret,
+    grant_type: &apos;authorization_code&apos;,
+    redirect_uri: redirectUri
+  };
+
+  var options = {
+    method: &apos;POST&apos;,
+    uri: &apos;https://&apos; + bounce.get(&apos;domainPrefix&apos;) + apiUrl + &apos;/1.0/token&apos;,
+    formData: body,
+    resolveWithFullResponse: true
+  };
+
+  return this.requestPromiseHelper(options);
+};
+
+/* istanbul ignore next */
+VendConnector.prototype.requestPromiseHelper = function requestPromiseHelper(options) {
+  return BBPromise.resolve(requestPromise(options));
+};
+
+module.exports = VendConnector;
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.6)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
