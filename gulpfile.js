@@ -7,7 +7,8 @@ requireDir('./gulp/tasks', {
   recurse: true
 });
 
-gulp.task('test', ['eslint-build', 'esdoc', 'mocha-server'], function () {
+//, 'mocha-server'
+gulp.task('test', ['eslint-build', 'esdoc'], function () {
   console.log('checking for error');
   if (helpers.getError()) {
     throw helpers.getError();
